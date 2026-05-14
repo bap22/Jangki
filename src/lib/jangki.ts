@@ -38,15 +38,15 @@ export function createInitialBoard(): (Piece | null)[][] {
   const board: (Piece | null)[][] = Array(10).fill(null).map(() => Array(9).fill(null));
 
   // Blue pieces (top)
+  board[0][3] = { type: 'janggun', player: 'blue' };
+  board[0][2] = { type: 'sa', player: 'blue' };
+  board[0][4] = { type: 'sa', player: 'blue' };
+  board[0][1] = { type: 'sang', player: 'blue' };
+  board[0][5] = { type: 'sang', player: 'blue' };
   board[0][0] = { type: 'cha', player: 'blue' };
-  board[0][1] = { type: 'ma', player: 'blue' };
-  board[0][2] = { type: 'sang', player: 'blue' };
-  board[0][3] = { type: 'sa', player: 'blue' };
-  board[0][4] = { type: 'janggun', player: 'blue' };
-  board[0][5] = { type: 'sa', player: 'blue' };
-  board[0][6] = { type: 'sang', player: 'blue' };
-  board[0][7] = { type: 'ma', player: 'blue' };
   board[0][8] = { type: 'cha', player: 'blue' };
+  board[0][6] = { type: 'ma', player: 'blue' };
+  board[0][7] = { type: 'ma', player: 'blue' };
   board[2][1] = { type: 'po', player: 'blue' };
   board[2][7] = { type: 'po', player: 'blue' };
   board[3][0] = { type: 'byeol', player: 'blue' };
@@ -56,15 +56,15 @@ export function createInitialBoard(): (Piece | null)[][] {
   board[3][8] = { type: 'byeol', player: 'blue' };
 
   // Red pieces (bottom)
+  board[9][3] = { type: 'janggun', player: 'red' };
+  board[9][2] = { type: 'sa', player: 'red' };
+  board[9][4] = { type: 'sa', player: 'red' };
+  board[9][1] = { type: 'sang', player: 'red' };
+  board[9][5] = { type: 'sang', player: 'red' };
   board[9][0] = { type: 'cha', player: 'red' };
-  board[9][1] = { type: 'ma', player: 'red' };
-  board[9][2] = { type: 'sang', player: 'red' };
-  board[9][3] = { type: 'sa', player: 'red' };
-  board[9][4] = { type: 'janggun', player: 'red' };
-  board[9][5] = { type: 'sa', player: 'red' };
-  board[9][6] = { type: 'sang', player: 'red' };
-  board[9][7] = { type: 'ma', player: 'red' };
   board[9][8] = { type: 'cha', player: 'red' };
+  board[9][6] = { type: 'ma', player: 'red' };
+  board[9][7] = { type: 'ma', player: 'red' };
   board[7][1] = { type: 'po', player: 'red' };
   board[7][7] = { type: 'po', player: 'red' };
   board[6][0] = { type: 'byeol', player: 'red' };
@@ -101,7 +101,7 @@ export function getValidMoves(board: (Piece | null)[][], pos: Position): Positio
 
   switch (type) {
     case 'janggun': moves.push(...getPalaceMoves(pos, player)); break;
-    case 'sa': moves.push(...getPalaceDiagonalMoves(pos, player)); break;
+    case 'sa': moves.push(...getSaMoves(pos, player)); break;
     case 'sang': moves.push(...getElephantMoves(board, pos, player)); break;
     case 'ma': moves.push(...getHorseMoves(board, pos, player)); break;
     case 'cha': moves.push(...getChariotMoves(board, pos, player)); break;
@@ -115,11 +115,17 @@ export function getValidMoves(board: (Piece | null)[][], pos: Position): Positio
   });
 }
 
+// Palace movement for General (janggun) - can move orthogonally and diagonally within palace
 function getPalaceMoves(pos: Position, player: Player): Position[] {
   const moves: Position[] = [];
   const palaceRows = player === 'red' ? [7, 8, 9] : [0, 1, 2];
   const palaceCols = [3, 4, 5];
-  const directions = [{ dr: -1, dc: 0 }, { dr: 1, dc: 0 }, { dr: 0, dc: -1 }, { dr: 0, dc: 1 }];
+  
+  // All 8 directions (orthogonal + diagonal)
+  const directions = [
+    { dr: -1, dc: 0 }, { dr: 1, dc: 0 }, { dr: 0, dc: -1 }, { dr: 0, dc: 1 },
+    { dr: -1, dc: -1 }, { dr: -1, dc: 1 }, { dr: 1, dc: -1 }, { dr: 1, dc: 1 },
+  ];
 
   for (const dir of directions) {
     const newRow = pos.row + dir.dr;
@@ -131,33 +137,23 @@ function getPalaceMoves(pos: Position, player: Player): Position[] {
   return moves;
 }
 
-function getPalaceDiagonalMoves(pos: Position, player: Player): Position[] {
-  const moves: Position[] = [];
-  const palaceRows = player === 'red' ? [7, 8, 9] : [0, 1, 2];
-  const palaceCols = [3, 4, 5];
-  const directions = [{ dr: -1, dc: -1 }, { dr: -1, dc: 1 }, { dr: 1, dc: -1 }, { dr: 1, dc: 1 }];
-
-  for (const dir of directions) {
-    const newRow = pos.row + dir.dr;
-    const newCol = pos.col + dir.dc;
-    if (palaceRows.includes(newRow) && palaceCols.includes(newCol)) {
-      moves.push({ row: newRow, col: newCol });
-    }
-  }
-  return moves;
+// Guard (sa) movement - same as general, orthogonal and diagonal within palace
+function getSaMoves(pos: Position, player: Player): Position[] {
+  return getPalaceMoves(pos, player);
 }
 
 function getElephantMoves(board: (Piece | null)[][], pos: Position, player: Player): Position[] {
   const moves: Position[] = [];
+  // Elephant moves: 1 step orthogonally, then 2 steps diagonally (blocked by first step)
   const patterns = [
-    { first: { dr: -1, dc: 0 }, second: { dr: -2, dc: -1 } },
-    { first: { dr: -1, dc: 0 }, second: { dr: -2, dc: 1 } },
-    { first: { dr: 1, dc: 0 }, second: { dr: 2, dc: -1 } },
-    { first: { dr: 1, dc: 0 }, second: { dr: 2, dc: 1 } },
-    { first: { dr: 0, dc: -1 }, second: { dr: -1, dc: -2 } },
-    { first: { dr: 0, dc: -1 }, second: { dr: 1, dc: -2 } },
-    { first: { dr: 0, dc: 1 }, second: { dr: -1, dc: 2 } },
-    { first: { dr: 0, dc: 1 }, second: { dr: 1, dc: 2 } },
+    { first: { dr: -1, dc: 0 }, second: { dr: -2, dc: -1 } },  // up, then up-left
+    { first: { dr: -1, dc: 0 }, second: { dr: -2, dc: 1 } },   // up, then up-right
+    { first: { dr: 1, dc: 0 }, second: { dr: 2, dc: -1 } },    // down, then down-left
+    { first: { dr: 1, dc: 0 }, second: { dr: 2, dc: 1 } },     // down, then down-right
+    { first: { dr: 0, dc: -1 }, second: { dr: -1, dc: -2 } },  // left, then up-left
+    { first: { dr: 0, dc: -1 }, second: { dr: 1, dc: -2 } },   // left, then down-left
+    { first: { dr: 0, dc: 1 }, second: { dr: -1, dc: 2 } },    // right, then up-right
+    { first: { dr: 0, dc: 1 }, second: { dr: 1, dc: 2 } },     // right, then down-right
   ];
 
   for (const pattern of patterns) {
@@ -175,15 +171,16 @@ function getElephantMoves(board: (Piece | null)[][], pos: Position, player: Play
 
 function getHorseMoves(board: (Piece | null)[][], pos: Position, player: Player): Position[] {
   const moves: Position[] = [];
+  // Horse moves: 1 step orthogonally, then 1 step diagonally (blocked by first step)
   const patterns = [
-    { first: { dr: -1, dc: 0 }, second: { dr: -1, dc: -1 } },
-    { first: { dr: -1, dc: 0 }, second: { dr: -1, dc: 1 } },
-    { first: { dr: 1, dc: 0 }, second: { dr: 1, dc: -1 } },
-    { first: { dr: 1, dc: 0 }, second: { dr: 1, dc: 1 } },
-    { first: { dr: 0, dc: -1 }, second: { dr: -1, dc: -1 } },
-    { first: { dr: 0, dc: -1 }, second: { dr: 1, dc: -1 } },
-    { first: { dr: 0, dc: 1 }, second: { dr: -1, dc: 1 } },
-    { first: { dr: 0, dc: 1 }, second: { dr: 1, dc: 1 } },
+    { first: { dr: -1, dc: 0 }, second: { dr: -1, dc: -1 } },  // up, then up-left
+    { first: { dr: -1, dc: 0 }, second: { dr: -1, dc: 1 } },   // up, then up-right
+    { first: { dr: 1, dc: 0 }, second: { dr: 1, dc: -1 } },    // down, then down-left
+    { first: { dr: 1, dc: 0 }, second: { dr: 1, dc: 1 } },     // down, then down-right
+    { first: { dr: 0, dc: -1 }, second: { dr: -1, dc: -1 } },  // left, then up-left
+    { first: { dr: 0, dc: -1 }, second: { dr: 1, dc: -1 } },   // left, then down-left
+    { first: { dr: 0, dc: 1 }, second: { dr: -1, dc: 1 } },    // right, then up-right
+    { first: { dr: 0, dc: 1 }, second: { dr: 1, dc: 1 } },     // right, then down-right
   ];
 
   for (const pattern of patterns) {
@@ -255,12 +252,20 @@ function getCannonMoves(board: (Piece | null)[][], pos: Position, player: Player
 function getSoldierMoves(pos: Position, player: Player): Position[] {
   const moves: Position[] = [];
   const forward = player === 'red' ? -1 : 1;
+  
+  // Forward move
   const forwardPos = { row: pos.row + forward, col: pos.col };
   if (isValidPosition(forwardPos)) moves.push(forwardPos);
-  const leftPos = { row: pos.row, col: pos.col - 1 };
-  const rightPos = { row: pos.row, col: pos.col + 1 };
-  if (isValidPosition(leftPos)) moves.push(leftPos);
-  if (isValidPosition(rightPos)) moves.push(rightPos);
+  
+  // Diagonal forward moves (only in enemy territory - rows 0-4 for red, 5-9 for blue)
+  const inEnemyTerritory = player === 'red' ? pos.row <= 5 : pos.row >= 4;
+  if (inEnemyTerritory) {
+    const diagLeft = { row: pos.row + forward, col: pos.col - 1 };
+    const diagRight = { row: pos.row + forward, col: pos.col + 1 };
+    if (isValidPosition(diagLeft)) moves.push(diagLeft);
+    if (isValidPosition(diagRight)) moves.push(diagRight);
+  }
+  
   return moves;
 }
 
