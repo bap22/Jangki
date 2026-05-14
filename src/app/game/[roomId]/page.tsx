@@ -1,9 +1,17 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { GameState, Piece, Player, Position, getValidMoves } from '@/lib/jangki';
+import { GameState, Piece, Player, Position, getValidMoves, Move } from '@/lib/jangki';
 import Board from '@/components/Board';
+
+interface ChatMessage {
+  id: string;
+  playerId: string;
+  playerColor?: Player;
+  text: string;
+  timestamp: number;
+}
 
 export default function GamePage() {
   const params = useParams();
@@ -17,6 +25,9 @@ export default function GamePage() {
   const [validMoves, setValidMoves] = useState<Position[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   const fetchGame = useCallback(async () => {
     try {
@@ -40,6 +51,10 @@ export default function GamePage() {
     const interval = setInterval(fetchGame, 2000);
     return () => clearInterval(interval);
   }, [fetchGame]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
 
   async function joinGame() {
     try {
@@ -78,17 +93,34 @@ export default function GamePage() {
     }
   }
 
+  async function sendChat() {
+    if (!chatInput.trim() || !game) return;
+    
+    try {
+      await fetch(`/api/games/${roomId}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          playerId, 
+          playerColor: myColor,
+          text: chatInput.trim() 
+        }),
+      });
+      setChatInput('');
+    } catch (err) {
+      console.error('Failed to send chat:', err);
+    }
+  }
+
   function handleSquareClick(pos: Position, piece: Piece | null) {
     if (!game || !myColor || game.gameOver) return;
     if (game.currentPlayer !== myColor) return;
 
-    // If clicking on a valid move destination
     if (selectedPos && validMoves.some(m => m.row === pos.row && m.col === pos.col)) {
       makeMove(selectedPos, pos);
       return;
     }
 
-    // If clicking on own piece, select it and show valid moves
     if (piece && piece.player === myColor) {
       setSelectedPos(pos);
       const moves = getValidMoves(game.board, pos);
@@ -98,6 +130,21 @@ export default function GamePage() {
       setValidMoves([]);
     }
   }
+
+  const formatMove = (move: Move, index: number): string => {
+    const fromCol = String.fromCharCode(65 + move.from.col);
+    const fromRow = 10 - move.from.row;
+    const toCol = String.fromCharCode(65 + move.to.col);
+    const toRow = 10 - move.to.row;
+    const pieceSymbol = move.piece.type === 'janggun' ? 'G' : 
+                        move.piece.type === 'sa' ? 'S' :
+                        move.piece.type === 'sang' ? 'E' :
+                        move.piece.type === 'ma' ? 'H' :
+                        move.piece.type === 'cha' ? 'R' :
+                        move.piece.type === 'po' ? 'C' : 'P';
+    const capture = move.captured ? 'x' : '';
+    return `${index + 1}. ${move.piece.player === 'red' ? '🔴' : '🔵'} ${pieceSymbol}${fromCol}${fromRow}${capture}${toCol}${toRow}`;
+  };
 
   if (loading) {
     return <div style={styles.center}>Loading game...</div>;
@@ -115,7 +162,7 @@ export default function GamePage() {
   if (!myColor) {
     return (
       <div style={styles.center}>
-        <h2>Room: {roomId}</h2>
+        <h2 style={styles.roomTitle}>🎮 Jangki Room: {roomId}</h2>
         <p style={styles.waitingText}>Players: {Object.keys(game.players).length}/2</p>
         <button onClick={joinGame} style={styles.button}>
           {game.players.red ? 'Join as Blue' : 'Join as Red'}
@@ -128,11 +175,11 @@ export default function GamePage() {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h1>🎮 Jangki</h1>
+        <h1 style={styles.title}>🎮 Jangki</h1>
         <div style={styles.status}>
-          <span>🏠 Room: <strong>{roomId}</strong></span>
-          <span>👤 You: <strong style={{ color: myColor === 'red' ? '#ef4444' : '#3b82f6' }}>{myColor.toUpperCase()}</strong></span>
-          <span>🎯 Turn: <strong style={{ color: game.currentPlayer === 'red' ? '#ef4444' : '#3b82f6' }}>{game.currentPlayer.toUpperCase()}</strong></span>
+          <span style={styles.statusItem}>🏠 <strong>{roomId}</strong></span>
+          <span style={styles.statusItem}>👤 <strong style={{ color: myColor === 'red' ? '#ef4444' : '#3b82f6' }}>{myColor.toUpperCase()}</strong></span>
+          <span style={styles.statusItem}>🎯 <strong style={{ color: game.currentPlayer === 'red' ? '#ef4444' : '#3b82f6' }}>{game.currentPlayer.toUpperCase()}</strong></span>
         </div>
       </div>
 
@@ -155,20 +202,78 @@ export default function GamePage() {
       )}
 
       {game.players.blue && game.currentPlayer === myColor && !game.gameOver && (
-        <div style={styles.yourTurn}>✅ Your turn to move!</div>
+        <div style={styles.yourTurn}>✅ Your turn!</div>
       )}
 
       {game.players.blue && game.currentPlayer !== myColor && !game.gameOver && (
-        <div style={styles.theirTurn}>⏳ Opponent is thinking...</div>
+        <div style={styles.theirTurn}>⏳ Opponent's turn...</div>
       )}
 
-      <Board
-        board={game.board}
-        selectedPos={selectedPos}
-        validMoves={validMoves}
-        onSquareClick={handleSquareClick}
-        perspective={myColor}
-      />
+      <div style={styles.gameArea}>
+        <div style={styles.boardSection}>
+          <Board
+            board={game.board}
+            selectedPos={selectedPos}
+            validMoves={validMoves}
+            onSquareClick={handleSquareClick}
+            perspective={myColor}
+          />
+        </div>
+
+        <div style={styles.sidebar}>
+          {/* Move Log */}
+          <div style={styles.panel}>
+            <h3 style={styles.panelTitle}>📜 Move Log</h3>
+            <div style={styles.moveLog}>
+              {game.moves.length === 0 ? (
+                <p style={styles.emptyLog}>No moves yet</p>
+              ) : (
+                game.moves.map((move, index) => (
+                  <div key={index} style={styles.moveEntry}>
+                    {formatMove(move, index)}
+                  </div>
+                ))
+              )}
+              <div ref={chatEndRef} />
+            </div>
+          </div>
+
+          {/* Chat */}
+          <div style={styles.panel}>
+            <h3 style={styles.panelTitle}>💬 Chat</h3>
+            <div style={styles.chatMessages}>
+              {chatMessages.length === 0 ? (
+                <p style={styles.emptyChat}>Say something!</p>
+              ) : (
+                chatMessages.map((msg, index) => (
+                  <div key={msg.id || index} style={styles.chatMessage}>
+                    <span style={{ 
+                      ...styles.chatPlayer, 
+                      color: msg.playerColor === 'red' ? '#ef4444' : '#3b82f6' 
+                    }}>
+                      {msg.playerColor ? `${msg.playerColor.toUpperCase()}` : 'System'}:
+                    </span>
+                    <span style={styles.chatText}>{msg.text}</span>
+                  </div>
+                ))
+              )}
+              <div ref={chatEndRef} />
+            </div>
+            <div style={styles.chatInput}>
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && sendChat()}
+                placeholder="Type a message..."
+                style={styles.input}
+                maxLength={200}
+              />
+              <button onClick={sendChat} style={styles.chatButton}>Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div style={styles.footer}>
         <button onClick={() => router.push('/')} style={styles.secondaryButton}>← Back to Lobby</button>
@@ -180,12 +285,30 @@ export default function GamePage() {
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
     minHeight: '100vh',
-    padding: '1rem',
+    padding: '1.5rem',
     fontFamily: 'system-ui, -apple-system, sans-serif',
     backgroundColor: '#0f172a',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+  },
+  header: {
+    textAlign: 'center',
+    marginBottom: '1rem',
+    color: 'white',
+  },
+  title: {
+    fontSize: '2.5rem',
+    marginBottom: '0.5rem',
+  },
+  status: {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: '2rem',
+    flexWrap: 'wrap',
+  },
+  statusItem: {
+    fontSize: '1rem',
   },
   center: {
     minHeight: '100vh',
@@ -193,20 +316,25 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    fontFamily: 'system-ui, -apple-system, sans-serif',
     backgroundColor: '#0f172a',
-  },
-  header: {
-    textAlign: 'center',
-    marginBottom: '1rem',
     color: 'white',
   },
-  status: {
-    display: 'flex',
-    justifyContent: 'center',
-    gap: '2rem',
-    marginTop: '0.5rem',
-    flexWrap: 'wrap',
+  roomTitle: {
+    fontSize: '2rem',
+    marginBottom: '1rem',
+  },
+  errorBanner: {
+    padding: '0.75rem 1.5rem',
+    backgroundColor: '#ef4444',
+    color: 'white',
+    borderRadius: '8px',
+    marginBottom: '1rem',
+    fontWeight: '500',
+  },
+  error: {
+    color: '#ef4444',
+    marginBottom: '1rem',
+    fontSize: '1.1rem',
   },
   gameOver: {
     textAlign: 'center',
@@ -216,6 +344,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: '1rem',
     color: '#1a1a1a',
     boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+  },
+  winnerText: {
+    fontSize: '1.25rem',
+    margin: '1rem 0',
   },
   waiting: {
     textAlign: 'center',
@@ -254,22 +386,100 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: '1rem',
     fontWeight: '500',
   },
-  errorBanner: {
-    padding: '0.75rem 1.5rem',
-    backgroundColor: '#ef4444',
+  gameArea: {
+    display: 'flex',
+    gap: '1.5rem',
+    alignItems: 'flex-start',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  boardSection: {
+    display: 'flex',
+    justifyContent: 'center',
+  },
+  sidebar: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+    minWidth: '280px',
+    maxWidth: '320px',
+  },
+  panel: {
+    backgroundColor: '#1e293b',
+    borderRadius: '12px',
+    padding: '1rem',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.2)',
+  },
+  panelTitle: {
     color: 'white',
-    borderRadius: '8px',
-    marginBottom: '1rem',
-    fontWeight: '500',
-  },
-  error: {
-    color: '#ef4444',
-    marginBottom: '1rem',
     fontSize: '1.1rem',
+    marginBottom: '0.75rem',
+    borderBottom: '1px solid #334155',
+    paddingBottom: '0.5rem',
   },
-  winnerText: {
-    fontSize: '1.25rem',
-    margin: '1rem 0',
+  moveLog: {
+    maxHeight: '200px',
+    overflowY: 'auto',
+    backgroundColor: '#0f172a',
+    borderRadius: '6px',
+    padding: '0.75rem',
+    fontSize: '0.9rem',
+    fontFamily: 'monospace',
+  },
+  moveEntry: {
+    padding: '0.25rem 0',
+    color: '#e2e8f0',
+    borderBottom: '1px solid #1e293b',
+  },
+  emptyLog: {
+    color: '#64748b',
+    fontStyle: 'italic',
+  },
+  chatMessages: {
+    maxHeight: '200px',
+    overflowY: 'auto',
+    backgroundColor: '#0f172a',
+    borderRadius: '6px',
+    padding: '0.75rem',
+    fontSize: '0.9rem',
+  },
+  chatMessage: {
+    padding: '0.25rem 0',
+    borderBottom: '1px solid #1e293b',
+  },
+  chatPlayer: {
+    fontWeight: 'bold',
+  },
+  chatText: {
+    color: '#e2e8f0',
+    marginLeft: '0.5rem',
+  },
+  emptyChat: {
+    color: '#64748b',
+    fontStyle: 'italic',
+  },
+  chatInput: {
+    display: 'flex',
+    gap: '0.5rem',
+    marginTop: '0.75rem',
+  },
+  input: {
+    flex: 1,
+    padding: '0.5rem',
+    borderRadius: '6px',
+    border: '1px solid #334155',
+    backgroundColor: '#1e293b',
+    color: 'white',
+    fontSize: '0.9rem',
+  },
+  chatButton: {
+    padding: '0.5rem 1rem',
+    backgroundColor: '#3b82f6',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontWeight: '600',
   },
   button: {
     padding: '0.875rem 2rem',
@@ -280,7 +490,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: '8px',
     cursor: 'pointer',
     fontWeight: '600',
-    transition: 'all 0.2s',
   },
   secondaryButton: {
     padding: '0.625rem 1.25rem',
