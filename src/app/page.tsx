@@ -57,22 +57,21 @@ export default function Home() {
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>🎮 Jangki</h1>
-      <p style={styles.subtitle}>Korean Chess - Multiplayer</p>
+      <div style={styles.hero}>
+        <h1 style={styles.title}>🎮 Jangki</h1>
+        <p style={styles.subtitle}>Korean Chess — Challenge a friend online</p>
+      </div>
 
-      <div style={styles.section}>
+      <div style={styles.actions}>
         <button
           onClick={createGame}
           disabled={creating}
-          style={styles.button}
+          style={styles.primaryButton}
         >
           {creating ? 'Creating...' : 'Create New Game'}
         </button>
-      </div>
 
-      <div style={styles.section}>
-        <h2 style={styles.heading}>Join Existing Game</h2>
-        <div style={styles.inputGroup}>
+        <div style={styles.joinSection}>
           <input
             type="text"
             value={joiningId}
@@ -83,7 +82,7 @@ export default function Home() {
           <button
             onClick={() => joinGame(joiningId)}
             disabled={!joiningId}
-            style={styles.button}
+            style={styles.secondaryButton}
           >
             Join
           </button>
@@ -91,34 +90,36 @@ export default function Home() {
       </div>
 
       {games.length > 0 && (
-        <div style={styles.section}>
-          <h2 style={styles.heading}>Active Games</h2>
-          {games.map((game) => (
-            <div key={game.roomId} style={styles.gameCard}>
-              <div style={styles.gameInfo}>
-                <span style={styles.roomId}>Room: {game.roomId}</span>
-                <span style={styles.players}>
-                  👥 {Object.keys(game.players).length}/2
-                </span>
-                {game.gameOver && <span style={styles.over}>Finished</span>}
+        <div style={styles.gamesSection}>
+          <h2 style={styles.sectionTitle}>Active Games</h2>
+          <div style={styles.gamesList}>
+            {games.map((game) => (
+              <div key={game.roomId} style={styles.gameCard}>
+                <div style={styles.gameInfo}>
+                  <span style={styles.roomId}>{game.roomId}</span>
+                  <span style={styles.players}>
+                    {Object.keys(game.players).length}/2 players
+                  </span>
+                  {game.gameOver && <span style={styles.finished}>Finished</span>}
+                </div>
+                <button
+                  onClick={() => joinGame(game.roomId)}
+                  disabled={Object.keys(game.players).length >= 2 || game.gameOver}
+                  style={styles.joinButton}
+                >
+                  {Object.keys(game.players).length >= 2 ? 'Full' : 'Join'}
+                </button>
               </div>
-              <button
-                onClick={() => joinGame(game.roomId)}
-                disabled={Object.keys(game.players).length >= 2 || game.gameOver}
-                style={styles.joinButton}
-              >
-                {Object.keys(game.players).length >= 2 ? 'Full' : 'Join'}
-              </button>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 
-      <div style={styles.rules}>
-        <h3 style={styles.rulesHeading}>📖 How to Play</h3>
+      <div style={styles.rulesSection}>
+        <h3 style={styles.rulesTitle}>📖 How to Play</h3>
         <p style={styles.rulesText}>
-          Learn the rules of Janggi (Korean Chess) - a strategic board game similar to chess, 
-          but with unique pieces and movement patterns.
+          Janggi (Korean Chess) is a strategic board game for two players. 
+          Capture your opponent's General to win!
         </p>
         <a 
           href="https://www.ymimports.com/pages/how-to-play-janggi" 
@@ -126,15 +127,8 @@ export default function Home() {
           rel="noopener noreferrer"
           style={styles.rulesLink}
         >
-          Read Full Rules & Guide →
+          Learn the Rules →
         </a>
-        <ul style={styles.rulesList}>
-          <li><strong>Objective:</strong> Capture the opponent's General (Janggun)</li>
-          <li><strong>Red moves first</strong></li>
-          <li><strong>Palace:</strong> Generals and Guards can move within the 3×3 palace (orthogonally and diagonally)</li>
-          <li><strong>River:</strong> Soldiers can move diagonally after crossing the river</li>
-          <li>Share the room ID with your opponent</li>
-        </ul>
       </div>
     </div>
   );
@@ -143,62 +137,96 @@ export default function Home() {
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
     minHeight: '100vh',
-    padding: '2rem',
-    fontFamily: 'system-ui, -apple-system, sans-serif',
-    maxWidth: '800px',
+    padding: '3rem 2rem',
+    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    maxWidth: '900px',
     margin: '0 auto',
+    backgroundColor: '#fafafa',
+  },
+  hero: {
+    textAlign: 'center',
+    marginBottom: '3rem',
   },
   title: {
-    fontSize: '3rem',
-    textAlign: 'center',
-    marginBottom: '0.5rem',
+    fontSize: '3.5rem',
+    fontWeight: '800',
     color: '#1a1a1a',
+    marginBottom: '0.75rem',
+    letterSpacing: '-0.02em',
   },
   subtitle: {
-    textAlign: 'center',
-    color: '#666',
-    marginBottom: '2rem',
+    fontSize: '1.25rem',
+    color: '#6b7280',
+    fontWeight: '400',
   },
-  section: {
-    marginBottom: '2rem',
-    padding: '1.5rem',
-    backgroundColor: '#f5f5f5',
-    borderRadius: '8px',
+  actions: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1.5rem',
+    marginBottom: '3rem',
+    alignItems: 'center',
   },
-  heading: {
-    fontSize: '1.5rem',
-    marginBottom: '1rem',
-    color: '#333',
-  },
-  button: {
-    padding: '0.75rem 1.5rem',
-    fontSize: '1rem',
+  primaryButton: {
+    padding: '1rem 2.5rem',
+    fontSize: '1.125rem',
     backgroundColor: '#2563eb',
     color: 'white',
     border: 'none',
-    borderRadius: '6px',
+    borderRadius: '12px',
     cursor: 'pointer',
-    transition: 'background-color 0.2s',
+    fontWeight: '600',
+    transition: 'all 0.2s',
+    boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
   },
-  inputGroup: {
+  joinSection: {
     display: 'flex',
-    gap: '0.5rem',
+    gap: '0.75rem',
+    width: '100%',
+    maxWidth: '400px',
   },
   input: {
     flex: 1,
-    padding: '0.75rem',
+    padding: '0.875rem 1rem',
     fontSize: '1rem',
-    border: '1px solid #ddd',
-    borderRadius: '6px',
+    border: '2px solid #e5e7eb',
+    borderRadius: '12px',
+    outline: 'none',
+    transition: 'border-color 0.2s',
+  },
+  secondaryButton: {
+    padding: '0.875rem 1.5rem',
+    fontSize: '1rem',
+    backgroundColor: '#10b981',
+    color: 'white',
+    border: 'none',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    fontWeight: '600',
+    transition: 'all 0.2s',
+  },
+  gamesSection: {
+    marginBottom: '3rem',
+  },
+  sectionTitle: {
+    fontSize: '1.5rem',
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginBottom: '1rem',
+  },
+  gamesList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.75rem',
   },
   gameCard: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '1rem',
+    padding: '1rem 1.25rem',
     backgroundColor: 'white',
-    borderRadius: '6px',
-    marginBottom: '0.5rem',
+    borderRadius: '12px',
+    border: '1px solid #e5e7eb',
+    transition: 'box-shadow 0.2s',
   },
   gameInfo: {
     display: 'flex',
@@ -206,52 +234,60 @@ const styles: { [key: string]: React.CSSProperties } = {
     alignItems: 'center',
   },
   roomId: {
-    fontWeight: 'bold',
+    fontWeight: '700',
     fontFamily: 'monospace',
+    fontSize: '1rem',
+    color: '#1a1a1a',
+    backgroundColor: '#f3f4f6',
+    padding: '0.35rem 0.75rem',
+    borderRadius: '6px',
   },
   players: {
-    color: '#666',
+    color: '#6b7280',
+    fontSize: '0.95rem',
   },
-  over: {
-    color: '#dc2626',
-    fontWeight: 'bold',
+  finished: {
+    color: '#ef4444',
+    fontWeight: '600',
+    fontSize: '0.95rem',
   },
   joinButton: {
-    padding: '0.5rem 1rem',
-    backgroundColor: '#16a34a',
+    padding: '0.625rem 1.25rem',
+    backgroundColor: '#2563eb',
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-  },
-  rules: {
-    marginTop: '2rem',
-    padding: '1.5rem',
-    backgroundColor: '#fef3c7',
     borderRadius: '8px',
+    cursor: 'pointer',
+    fontWeight: '600',
+    fontSize: '0.95rem',
+    transition: 'all 0.2s',
   },
-  rulesHeading: {
+  rulesSection: {
+    padding: '2rem',
+    backgroundColor: 'white',
+    borderRadius: '16px',
+    border: '1px solid #e5e7eb',
+    textAlign: 'center',
+  },
+  rulesTitle: {
     fontSize: '1.25rem',
-    marginBottom: '0.5rem',
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginBottom: '0.75rem',
   },
   rulesText: {
-    marginBottom: '1rem',
+    color: '#4b5563',
     lineHeight: '1.6',
-    color: '#333',
+    marginBottom: '1.25rem',
   },
   rulesLink: {
     display: 'inline-block',
-    padding: '0.5rem 1rem',
-    backgroundColor: '#2563eb',
-    color: 'white',
+    padding: '0.75rem 1.5rem',
+    backgroundColor: '#f3f4f6',
+    color: '#1a1a1a',
     textDecoration: 'none',
-    borderRadius: '6px',
+    borderRadius: '10px',
     fontWeight: '600',
-    marginBottom: '1rem',
-    transition: 'background-color 0.2s',
-  },
-  rulesList: {
-    paddingLeft: '1.5rem',
-    lineHeight: '1.8',
+    transition: 'all 0.2s',
   },
 };
