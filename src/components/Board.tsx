@@ -36,8 +36,8 @@ export default function Board({ board, selectedPos, validMoves, onSquareClick, p
     return selectedPos?.row === row && selectedPos?.col === col;
   };
 
-  const CELL_SIZE = 60;
-  const PADDING = 30;
+  const CELL_SIZE = 54;
+  const PADDING = 25;
   const BOARD_WIDTH = CELL_SIZE * 8;
   const BOARD_HEIGHT = CELL_SIZE * 9;
 
@@ -53,11 +53,13 @@ export default function Board({ board, selectedPos, validMoves, onSquareClick, p
       <div style={styles.boardWrapper}>
         {/* Row labels */}
         <div style={styles.rowLabels}>
+          <div style={{ height: 20 }}></div>
           {rowIndices.map(row => (
             <div key={`rl-${row}`} style={{ ...styles.rowLabel, height: CELL_SIZE }}>
               {10 - row}
             </div>
           ))}
+          <div style={{ height: 20 }}></div>
         </div>
 
         {/* Board area */}
@@ -126,7 +128,7 @@ export default function Board({ board, selectedPos, validMoves, onSquareClick, p
                     key={`dot-${row}-${col}`}
                     cx={PADDING + ci * CELL_SIZE}
                     cy={PADDING + ri * CELL_SIZE}
-                    r="3"
+                    r="2.5"
                     fill="#1a1a1a"
                   />
                 ))
@@ -191,10 +193,11 @@ export default function Board({ board, selectedPos, validMoves, onSquareClick, p
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
     display: 'inline-block',
-    padding: '10px',
-    backgroundColor: '#f5deb3',
-    borderRadius: '8px',
-    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+    padding: '8px',
+    backgroundColor: '#deb887',
+    borderRadius: '4px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+    border: '2px solid #8b4513',
   },
   boardWrapper: {
     display: 'flex',
@@ -202,15 +205,15 @@ const styles: { [key: string]: React.CSSProperties } = {
   rowLabels: {
     display: 'flex',
     flexDirection: 'column',
-    marginRight: '5px',
+    marginRight: '4px',
   },
   rowLabel: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '14px',
+    fontSize: '12px',
     fontWeight: 'bold',
-    color: '#333',
+    color: '#5d4037',
   },
   boardSection: {
     display: 'flex',
@@ -223,9 +226,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '14px',
+    fontSize: '12px',
     fontWeight: 'bold',
-    color: '#333',
+    color: '#5d4037',
   },
   gridContainer: {
     position: 'relative',
@@ -236,8 +239,8 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   piecesLayer: {
     position: 'absolute',
-    top: 30,
-    left: 30,
+    top: 25,
+    left: 25,
   },
   pieceCell: {
     display: 'flex',
@@ -247,25 +250,25 @@ const styles: { [key: string]: React.CSSProperties } = {
     position: 'relative',
   },
   piece: {
-    width: '48px',
-    height: '48px',
+    width: '44px',
+    height: '44px',
     borderRadius: '50%',
-    border: '3px solid',
-    backgroundColor: '#fef3c7',
+    border: '2.5px solid',
+    backgroundColor: '#fff8e1',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '24px',
+    fontSize: '22px',
     fontWeight: 'bold',
-    boxShadow: '0 3px 6px rgba(0,0,0,0.3)',
+    boxShadow: '0 2px 5px rgba(0,0,0,0.25)',
     zIndex: 1,
   },
   validMarker: {
-    width: '20px',
-    height: '20px',
+    width: '16px',
+    height: '16px',
     borderRadius: '50%',
     backgroundColor: '#22c55e',
-    opacity: 0.7,
+    opacity: 0.6,
   },
   validCaptureMarker: {
     position: 'absolute',
@@ -273,8 +276,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     left: 0,
     right: 0,
     bottom: 0,
-    border: '4px solid #22c55e',
+    border: '3px solid #22c55e',
     borderRadius: '50%',
-    opacity: 0.7,
+    opacity: 0.6,
   },
 };
