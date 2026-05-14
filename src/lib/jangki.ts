@@ -17,7 +17,7 @@ export interface Move {
   from: Position;
   to: Position;
   piece: Piece;
-  captured?: Piece;
+  captured: Piece | null;
 }
 
 export interface GameState {
