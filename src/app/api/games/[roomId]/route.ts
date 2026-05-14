@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getGame, updateGame, deleteGame } from '@/lib/gameStore';
+import { getGame, updateGame, deleteGame, getChat, addChatMessage } from '@/lib/gameStore';
 import { makeMove, Position } from '@/lib/jangki';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(
   request: NextRequest,
@@ -23,7 +24,7 @@ export async function POST(
   }
 
   const body = await request.json();
-  const { action, playerId } = body;
+  const { action, playerId, playerColor, from, to, text } = body;
 
   if (action === 'join') {
     if (!game.players.red) {
@@ -36,13 +37,31 @@ export async function POST(
   }
 
   if (action === 'move') {
-    const { from, to }: { from: Position; to: Position } = body;
-    const newGame = makeMove(game, from, to);
+    const fromPos: Position = from;
+    const toPos: Position = to;
+    const newGame = makeMove(game, fromPos, toPos);
     if (!newGame) {
       return NextResponse.json({ error: 'Invalid move' }, { status: 400 });
     }
     updateGame(params.roomId, newGame);
     return NextResponse.json(newGame);
+  }
+
+  if (action === 'chat') {
+    if (!text || typeof text !== 'string') {
+      return NextResponse.json({ error: 'Message required' }, { status: 400 });
+    }
+    
+    const message = {
+      id: uuidv4(),
+      playerId,
+      playerColor: playerColor || undefined,
+      text: text.trim().slice(0, 200),
+      timestamp: Date.now(),
+    };
+    
+    addChatMessage(params.roomId, message);
+    return NextResponse.json({ success: true });
   }
 
   if (action === 'delete') {
