@@ -236,8 +236,8 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   piecesLayer: {
     position: 'absolute',
-    top: PADDING,
-    left: PADDING,
+    top: 30,
+    left: 30,
   },
   pieceCell: {
     display: 'flex',
