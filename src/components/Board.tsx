@@ -239,8 +239,9 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   piecesLayer: {
     position: 'absolute',
-    top: 25,
-    left: 25,
+    top: 0,
+    left: 0,
+    transform: `translate(${PADDING}px, ${PADDING}px)`,
   },
   pieceCell: {
     display: 'flex',
@@ -250,8 +251,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     position: 'relative',
   },
   piece: {
-    width: '44px',
-    height: '44px',
+    width: '42px',
+    height: '42px',
     borderRadius: '50%',
     border: '2.5px solid',
     backgroundColor: '#fff8e1',
@@ -264,8 +265,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     zIndex: 1,
   },
   validMarker: {
-    width: '16px',
-    height: '16px',
+    width: '14px',
+    height: '14px',
     borderRadius: '50%',
     backgroundColor: '#22c55e',
     opacity: 0.6,
