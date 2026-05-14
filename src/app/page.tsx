@@ -115,11 +115,24 @@ export default function Home() {
       )}
 
       <div style={styles.rules}>
-        <h3 style={styles.rulesHeading}>How to Play</h3>
+        <h3 style={styles.rulesHeading}>📖 How to Play</h3>
+        <p style={styles.rulesText}>
+          Learn the rules of Janggi (Korean Chess) - a strategic board game similar to chess, 
+          but with unique pieces and movement patterns.
+        </p>
+        <a 
+          href="https://www.ymimports.com/pages/how-to-play-janggi" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          style={styles.rulesLink}
+        >
+          Read Full Rules & Guide →
+        </a>
         <ul style={styles.rulesList}>
-          <li>Capture the opponent's General (Janggun) to win</li>
-          <li>Red moves first</li>
-          <li>Each piece has unique movement rules</li>
+          <li><strong>Objective:</strong> Capture the opponent's General (Janggun)</li>
+          <li><strong>Red moves first</strong></li>
+          <li><strong>Palace:</strong> Generals and Guards can move within the 3×3 palace (orthogonally and diagonally)</li>
+          <li><strong>River:</strong> Soldiers can move diagonally after crossing the river</li>
           <li>Share the room ID with your opponent</li>
         </ul>
       </div>
@@ -220,6 +233,22 @@ const styles: { [key: string]: React.CSSProperties } = {
   rulesHeading: {
     fontSize: '1.25rem',
     marginBottom: '0.5rem',
+  },
+  rulesText: {
+    marginBottom: '1rem',
+    lineHeight: '1.6',
+    color: '#333',
+  },
+  rulesLink: {
+    display: 'inline-block',
+    padding: '0.5rem 1rem',
+    backgroundColor: '#2563eb',
+    color: 'white',
+    textDecoration: 'none',
+    borderRadius: '6px',
+    fontWeight: '600',
+    marginBottom: '1rem',
+    transition: 'background-color 0.2s',
   },
   rulesList: {
     paddingLeft: '1.5rem',
