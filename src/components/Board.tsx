@@ -41,7 +41,6 @@ export default function Board({ board, selectedPos, validMoves, onSquareClick, p
   const BOARD_WIDTH = CELL_SIZE * 8;
   const BOARD_HEIGHT = CELL_SIZE * 9;
 
-  // Create arrays for rendering - don't flip indices, just flip visual order
   const rowIndices = perspective === 'blue' 
     ? [9,8,7,6,5,4,3,2,1,0] 
     : [0,1,2,3,4,5,6,7,8,9];
@@ -51,8 +50,8 @@ export default function Board({ board, selectedPos, validMoves, onSquareClick, p
 
   return (
     <div style={styles.container}>
-      {/* Row labels */}
-      <div style={styles.labelsWrapper}>
+      <div style={styles.boardWrapper}>
+        {/* Row labels */}
         <div style={styles.rowLabels}>
           {rowIndices.map(row => (
             <div key={`rl-${row}`} style={{ ...styles.rowLabel, height: CELL_SIZE }}>
@@ -62,9 +61,9 @@ export default function Board({ board, selectedPos, validMoves, onSquareClick, p
         </div>
 
         {/* Board area */}
-        <div style={styles.boardArea}>
-          {/* Column labels at top */}
-          <div style={styles.colLabelsTop}>
+        <div style={styles.boardSection}>
+          {/* Top column labels */}
+          <div style={styles.colLabels}>
             <div style={{ width: PADDING }}></div>
             {colIndices.map(col => (
               <div key={`ct-${col}`} style={{ ...styles.colLabel, width: CELL_SIZE }}>
@@ -73,106 +72,109 @@ export default function Board({ board, selectedPos, validMoves, onSquareClick, p
             ))}
           </div>
 
-          {/* SVG Grid */}
-          <svg width={BOARD_WIDTH + PADDING * 2} height={BOARD_HEIGHT + PADDING * 2} style={styles.svg}>
-            {/* Horizontal lines */}
-            {rowIndices.map((_, i) => (
-              <line
-                key={`h-${i}`}
-                x1={PADDING}
-                y1={PADDING + i * CELL_SIZE}
-                x2={PADDING + BOARD_WIDTH}
-                y2={PADDING + i * CELL_SIZE}
-                stroke="#1a1a1a"
-                strokeWidth="1.5"
-              />
-            ))}
-            
-            {/* Vertical lines - split at river */}
-            {colIndices.map((_, i) => (
-              <g key={`v-${i}`}>
+          {/* Grid + pieces container */}
+          <div style={styles.gridContainer}>
+            {/* SVG Grid */}
+            <svg width={BOARD_WIDTH + PADDING * 2} height={BOARD_HEIGHT + PADDING * 2} style={styles.svg}>
+              {/* Horizontal lines */}
+              {rowIndices.map((_, i) => (
                 <line
-                  x1={PADDING + i * CELL_SIZE}
-                  y1={PADDING}
-                  x2={PADDING + i * CELL_SIZE}
-                  y2={PADDING + 4 * CELL_SIZE}
+                  key={`h-${i}`}
+                  x1={PADDING}
+                  y1={PADDING + i * CELL_SIZE}
+                  x2={PADDING + BOARD_WIDTH}
+                  y2={PADDING + i * CELL_SIZE}
                   stroke="#1a1a1a"
                   strokeWidth="1.5"
                 />
-                <line
-                  x1={PADDING + i * CELL_SIZE}
-                  y1={PADDING + 5 * CELL_SIZE}
-                  x2={PADDING + i * CELL_SIZE}
-                  y2={PADDING + 9 * CELL_SIZE}
-                  stroke="#1a1a1a"
-                  strokeWidth="1.5"
-                />
-              </g>
-            ))}
+              ))}
+              
+              {/* Vertical lines - split at river */}
+              {colIndices.map((_, i) => (
+                <g key={`v-${i}`}>
+                  <line
+                    x1={PADDING + i * CELL_SIZE}
+                    y1={PADDING}
+                    x2={PADDING + i * CELL_SIZE}
+                    y2={PADDING + 4 * CELL_SIZE}
+                    stroke="#1a1a1a"
+                    strokeWidth="1.5"
+                  />
+                  <line
+                    x1={PADDING + i * CELL_SIZE}
+                    y1={PADDING + 5 * CELL_SIZE}
+                    x2={PADDING + i * CELL_SIZE}
+                    y2={PADDING + 9 * CELL_SIZE}
+                    stroke="#1a1a1a"
+                    strokeWidth="1.5"
+                  />
+                </g>
+              ))}
 
-            {/* Palace diagonals - Blue (top) */}
-            <line x1={PADDING + 3 * CELL_SIZE} y1={PADDING} x2={PADDING + 5 * CELL_SIZE} y2={PADDING + 2 * CELL_SIZE} stroke="#1a1a1a" strokeWidth="1.5" />
-            <line x1={PADDING + 5 * CELL_SIZE} y1={PADDING} x2={PADDING + 3 * CELL_SIZE} y2={PADDING + 2 * CELL_SIZE} stroke="#1a1a1a" strokeWidth="1.5" />
-            
-            {/* Palace diagonals - Red (bottom) */}
-            <line x1={PADDING + 3 * CELL_SIZE} y1={PADDING + 7 * CELL_SIZE} x2={PADDING + 5 * CELL_SIZE} y2={PADDING + 9 * CELL_SIZE} stroke="#1a1a1a" strokeWidth="1.5" />
-            <line x1={PADDING + 5 * CELL_SIZE} y1={PADDING + 7 * CELL_SIZE} x2={PADDING + 3 * CELL_SIZE} y2={PADDING + 9 * CELL_SIZE} stroke="#1a1a1a" strokeWidth="1.5" />
+              {/* Palace diagonals - Blue (top) */}
+              <line x1={PADDING + 3 * CELL_SIZE} y1={PADDING} x2={PADDING + 5 * CELL_SIZE} y2={PADDING + 2 * CELL_SIZE} stroke="#1a1a1a" strokeWidth="1.5" />
+              <line x1={PADDING + 5 * CELL_SIZE} y1={PADDING} x2={PADDING + 3 * CELL_SIZE} y2={PADDING + 2 * CELL_SIZE} stroke="#1a1a1a" strokeWidth="1.5" />
+              
+              {/* Palace diagonals - Red (bottom) */}
+              <line x1={PADDING + 3 * CELL_SIZE} y1={PADDING + 7 * CELL_SIZE} x2={PADDING + 5 * CELL_SIZE} y2={PADDING + 9 * CELL_SIZE} stroke="#1a1a1a" strokeWidth="1.5" />
+              <line x1={PADDING + 5 * CELL_SIZE} y1={PADDING + 7 * CELL_SIZE} x2={PADDING + 3 * CELL_SIZE} y2={PADDING + 9 * CELL_SIZE} stroke="#1a1a1a" strokeWidth="1.5" />
 
-            {/* Intersection dots */}
-            {rowIndices.map((row, ri) =>
-              colIndices.map((col, ci) => (
-                <circle
-                  key={`dot-${row}-${col}`}
-                  cx={PADDING + ci * CELL_SIZE}
-                  cy={PADDING + ri * CELL_SIZE}
-                  r="3"
-                  fill="#1a1a1a"
-                />
-              ))
-            )}
-          </svg>
+              {/* Intersection dots */}
+              {rowIndices.map((row, ri) =>
+                colIndices.map((col, ci) => (
+                  <circle
+                    key={`dot-${row}-${col}`}
+                    cx={PADDING + ci * CELL_SIZE}
+                    cy={PADDING + ri * CELL_SIZE}
+                    r="3"
+                    fill="#1a1a1a"
+                  />
+                ))
+              )}
+            </svg>
 
-          {/* Clickable pieces layer */}
-          <div style={styles.piecesLayer}>
-            {rowIndices.map((row, ri) => (
-              <div key={`pr-${row}`} style={{ display: 'flex', height: CELL_SIZE }}>
-                {colIndices.map((col, ci) => {
-                  const piece = board[row][col];
-                  const selected = isSelected(row, col);
-                  const validMove = isValidMove(row, col);
-                  
-                  return (
-                    <div
-                      key={`pc-${col}`}
-                      onClick={() => onSquareClick({ row, col }, piece)}
-                      style={{
-                        ...styles.pieceCell,
-                        width: CELL_SIZE,
-                        backgroundColor: selected ? '#fbbf24' : 'transparent',
-                      }}
-                    >
-                      {piece && (
-                        <div
-                          style={{
-                            ...styles.piece,
-                            color: getPieceColor(piece),
-                            borderColor: getPieceColor(piece),
-                          }}
-                        >
-                          {getPieceSymbol(piece)}
-                        </div>
-                      )}
-                      {validMove && !piece && <div style={styles.validMarker} />}
-                      {validMove && piece && <div style={styles.validCaptureMarker} />}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+            {/* Clickable pieces layer - positioned absolutely over the grid */}
+            <div style={styles.piecesLayer}>
+              {rowIndices.map((row, ri) => (
+                <div key={`pr-${row}`} style={{ display: 'flex', height: CELL_SIZE }}>
+                  {colIndices.map((col, ci) => {
+                    const piece = board[row][col];
+                    const selected = isSelected(row, col);
+                    const validMove = isValidMove(row, col);
+                    
+                    return (
+                      <div
+                        key={`pc-${col}`}
+                        onClick={() => onSquareClick({ row, col }, piece)}
+                        style={{
+                          ...styles.pieceCell,
+                          width: CELL_SIZE,
+                          backgroundColor: selected ? '#fbbf24' : 'transparent',
+                        }}
+                      >
+                        {piece && (
+                          <div
+                            style={{
+                              ...styles.piece,
+                              color: getPieceColor(piece),
+                              borderColor: getPieceColor(piece),
+                            }}
+                          >
+                            {getPieceSymbol(piece)}
+                          </div>
+                        )}
+                        {validMove && !piece && <div style={styles.validMarker} />}
+                        {validMove && piece && <div style={styles.validCaptureMarker} />}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Column labels at bottom */}
-          <div style={styles.colLabelsBottom}>
+          {/* Bottom column labels */}
+          <div style={styles.colLabels}>
             <div style={{ width: PADDING }}></div>
             {colIndices.map(col => (
               <div key={`cb-${col}`} style={{ ...styles.colLabel, width: CELL_SIZE }}>
@@ -194,14 +196,13 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: '8px',
     boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
   },
-  labelsWrapper: {
+  boardWrapper: {
     display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
   },
   rowLabels: {
     display: 'flex',
     flexDirection: 'column',
+    marginRight: '5px',
   },
   rowLabel: {
     display: 'flex',
@@ -210,19 +211,13 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '14px',
     fontWeight: 'bold',
     color: '#333',
-    width: '20px',
   },
-  boardArea: {
+  boardSection: {
     display: 'flex',
     flexDirection: 'column',
   },
-  colLabelsTop: {
+  colLabels: {
     display: 'flex',
-    marginBottom: '0',
-  },
-  colLabelsBottom: {
-    display: 'flex',
-    marginTop: '5px',
   },
   colLabel: {
     display: 'flex',
@@ -232,6 +227,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: 'bold',
     color: '#333',
   },
+  gridContainer: {
+    position: 'relative',
+  },
   svg: {
     display: 'block',
     backgroundColor: '#f5deb3',
@@ -240,7 +238,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     position: 'absolute',
     top: PADDING,
     left: PADDING,
-    pointerEvents: 'none',
   },
   pieceCell: {
     display: 'flex',
@@ -248,7 +245,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     justifyContent: 'center',
     cursor: 'pointer',
     position: 'relative',
-    pointerEvents: 'auto',
   },
   piece: {
     width: '48px',
