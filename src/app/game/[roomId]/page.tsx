@@ -161,7 +161,7 @@ export default function GamePage() {
   if (error || !game) {
     return (
       <div style={styles.center}>
-        <p style={styles.error}>{error || 'Game not found'}</p>
+        <p style={styles.errorMessage}>{error || 'Game not found'}</p>
         <button onClick={() => router.push('/')} style={styles.button}>Back to Home</button>
       </div>
     );
@@ -170,7 +170,7 @@ export default function GamePage() {
   if (!myColor) {
     return (
       <div style={styles.center}>
-        <h2 style={styles.roomTitle}>🎮 Jangki Room: {roomId}</h2>
+        <h2 style={styles.roomTitle}>🎮 Room: {roomId}</h2>
         <p style={styles.waitingText}>Players: {Object.keys(game.players).length}/2</p>
         <button onClick={joinGame} style={styles.button}>
           {game.players.red ? 'Join as Blue' : 'Join as Red'}
@@ -186,8 +186,8 @@ export default function GamePage() {
         <h1 style={styles.title}>🎮 Jangki</h1>
         <div style={styles.status}>
           <span style={styles.statusItem}>🏠 <strong>{roomId}</strong></span>
-          <span style={styles.statusItem}>👤 <strong style={{ color: myColor === 'red' ? '#ef4444' : '#3b82f6' }}>{myColor.toUpperCase()}</strong></span>
-          <span style={styles.statusItem}>🎯 <strong style={{ color: game.currentPlayer === 'red' ? '#ef4444' : '#3b82f6' }}>{game.currentPlayer.toUpperCase()}</strong></span>
+          <span style={styles.statusItem}>👤 <strong style={{ color: myColor === 'red' ? '#dc2626' : '#2563eb' }}>{myColor.toUpperCase()}</strong></span>
+          <span style={styles.statusItem}>🎯 <strong style={{ color: game.currentPlayer === 'red' ? '#dc2626' : '#2563eb' }}>{game.currentPlayer.toUpperCase()}</strong></span>
         </div>
       </div>
 
@@ -197,7 +197,7 @@ export default function GamePage() {
         <div style={styles.gameOver}>
           <h2>🏆 Game Over!</h2>
           <p style={styles.winnerText}>
-            Winner: <strong style={{ color: game.winner === 'red' ? '#ef4444' : '#3b82f6' }}>{game.winner?.toUpperCase()}</strong>
+            Winner: <strong style={{ color: game.winner === 'red' ? '#dc2626' : '#2563eb' }}>{game.winner?.toUpperCase()}</strong>
           </p>
           <button onClick={() => router.push('/')} style={styles.button}>Play Again</button>
         </div>
@@ -229,7 +229,6 @@ export default function GamePage() {
         </div>
 
         <div style={styles.sidebar}>
-          {/* Move Log */}
           <div style={styles.panel}>
             <h3 style={styles.panelTitle}>📜 Move Log</h3>
             <div style={styles.moveLog}>
@@ -246,7 +245,6 @@ export default function GamePage() {
             </div>
           </div>
 
-          {/* Chat */}
           <div style={styles.panel}>
             <h3 style={styles.panelTitle}>💬 Chat</h3>
             <div style={styles.chatMessages}>
@@ -257,7 +255,7 @@ export default function GamePage() {
                   <div key={msg.id || index} style={styles.chatMessage}>
                     <span style={{ 
                       ...styles.chatPlayer, 
-                      color: msg.playerColor === 'red' ? '#ef4444' : '#3b82f6' 
+                      color: msg.playerColor === 'red' ? '#dc2626' : '#2563eb' 
                     }}>
                       {msg.playerColor ? `${msg.playerColor.toUpperCase()}` : 'System'}:
                     </span>
@@ -293,27 +291,31 @@ export default function GamePage() {
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
     minHeight: '100vh',
-    padding: '1.5rem',
-    fontFamily: 'system-ui, -apple-system, sans-serif',
-    backgroundColor: '#0f172a',
+    padding: '2rem',
+    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    backgroundColor: '#fafafa',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
   },
   header: {
     textAlign: 'center',
-    marginBottom: '1rem',
-    color: 'white',
+    marginBottom: '1.5rem',
   },
   title: {
     fontSize: '2.5rem',
-    marginBottom: '0.5rem',
+    fontWeight: '800',
+    color: '#1a1a1a',
+    marginBottom: '0.75rem',
+    letterSpacing: '-0.02em',
   },
   status: {
     display: 'flex',
     justifyContent: 'center',
     gap: '2rem',
     flexWrap: 'wrap',
+    fontSize: '1rem',
+    color: '#4b5563',
   },
   statusItem: {
     fontSize: '1rem',
@@ -324,34 +326,37 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0f172a',
-    color: 'white',
+    backgroundColor: '#fafafa',
   },
   roomTitle: {
     fontSize: '2rem',
+    fontWeight: '700',
+    color: '#1a1a1a',
     marginBottom: '1rem',
   },
   errorBanner: {
     padding: '0.75rem 1.5rem',
-    backgroundColor: '#ef4444',
-    color: 'white',
+    backgroundColor: '#fee2e2',
+    color: '#dc2626',
     borderRadius: '8px',
     marginBottom: '1rem',
     fontWeight: '500',
+    border: '1px solid #fecaca',
   },
-  error: {
-    color: '#ef4444',
+  errorMessage: {
+    color: '#dc2626',
     marginBottom: '1rem',
     fontSize: '1.1rem',
   },
   gameOver: {
     textAlign: 'center',
     padding: '1.5rem',
-    backgroundColor: '#fef3c7',
+    backgroundColor: 'white',
     borderRadius: '12px',
     marginBottom: '1rem',
     color: '#1a1a1a',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+    border: '1px solid #e5e7eb',
   },
   winnerText: {
     fontSize: '1.25rem',
@@ -360,43 +365,46 @@ const styles: { [key: string]: React.CSSProperties } = {
   waiting: {
     textAlign: 'center',
     padding: '0.75rem 1.5rem',
-    backgroundColor: '#3b82f6',
-    color: 'white',
+    backgroundColor: '#dbeafe',
+    color: '#1e40af',
     borderRadius: '8px',
     marginBottom: '1rem',
     fontWeight: '500',
+    border: '1px solid #bfdbfe',
   },
   waitingText: {
-    color: '#94a3b8',
+    color: '#6b7280',
     marginBottom: '1rem',
     fontSize: '1.1rem',
   },
   hint: {
-    color: '#64748b',
+    color: '#9ca3af',
     marginTop: '1rem',
     fontSize: '0.9rem',
   },
   yourTurn: {
     textAlign: 'center',
     padding: '0.75rem 1.5rem',
-    backgroundColor: '#22c55e',
-    color: 'white',
+    backgroundColor: '#dcfce7',
+    color: '#166534',
     borderRadius: '8px',
     marginBottom: '1rem',
     fontWeight: '600',
+    border: '1px solid #bbf7d0',
   },
   theirTurn: {
     textAlign: 'center',
     padding: '0.75rem 1.5rem',
-    backgroundColor: '#f59e0b',
-    color: 'white',
+    backgroundColor: '#fef3c7',
+    color: '#92400e',
     borderRadius: '8px',
     marginBottom: '1rem',
     fontWeight: '500',
+    border: '1px solid #fde68a',
   },
   gameArea: {
     display: 'flex',
-    gap: '1.5rem',
+    gap: '2rem',
     alignItems: 'flex-start',
     flexWrap: 'wrap',
     justifyContent: 'center',
@@ -409,107 +417,115 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     flexDirection: 'column',
     gap: '1rem',
-    minWidth: '280px',
-    maxWidth: '320px',
+    minWidth: '300px',
+    maxWidth: '340px',
   },
   panel: {
-    backgroundColor: '#1e293b',
+    backgroundColor: 'white',
     borderRadius: '12px',
-    padding: '1rem',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.2)',
+    padding: '1.25rem',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+    border: '1px solid #e5e7eb',
   },
   panelTitle: {
-    color: 'white',
+    color: '#1a1a1a',
     fontSize: '1.1rem',
-    marginBottom: '0.75rem',
-    borderBottom: '1px solid #334155',
-    paddingBottom: '0.5rem',
+    fontWeight: '700',
+    marginBottom: '1rem',
+    paddingBottom: '0.75rem',
+    borderBottom: '2px solid #f3f4f6',
   },
   moveLog: {
-    maxHeight: '200px',
+    maxHeight: '220px',
     overflowY: 'auto',
-    backgroundColor: '#0f172a',
-    borderRadius: '6px',
+    backgroundColor: '#f9fafb',
+    borderRadius: '8px',
     padding: '0.75rem',
     fontSize: '0.85rem',
     fontFamily: 'system-ui, sans-serif',
+    border: '1px solid #e5e7eb',
   },
   moveEntry: {
-    padding: '0.3rem 0',
-    color: '#e2e8f0',
-    borderBottom: '1px solid #1e293b',
+    padding: '0.35rem 0',
+    color: '#374151',
+    borderBottom: '1px solid #f3f4f6',
   },
   emptyLog: {
-    color: '#64748b',
+    color: '#9ca3af',
     fontStyle: 'italic',
   },
   chatMessages: {
-    maxHeight: '200px',
+    maxHeight: '220px',
     overflowY: 'auto',
-    backgroundColor: '#0f172a',
-    borderRadius: '6px',
+    backgroundColor: '#f9fafb',
+    borderRadius: '8px',
     padding: '0.75rem',
     fontSize: '0.9rem',
+    border: '1px solid #e5e7eb',
   },
   chatMessage: {
-    padding: '0.25rem 0',
-    borderBottom: '1px solid #1e293b',
+    padding: '0.35rem 0',
+    borderBottom: '1px solid #f3f4f6',
   },
   chatPlayer: {
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
   chatText: {
-    color: '#e2e8f0',
+    color: '#374151',
     marginLeft: '0.5rem',
   },
   emptyChat: {
-    color: '#64748b',
+    color: '#9ca3af',
     fontStyle: 'italic',
   },
   chatInput: {
     display: 'flex',
     gap: '0.5rem',
-    marginTop: '0.75rem',
+    marginTop: '1rem',
   },
   input: {
     flex: 1,
-    padding: '0.5rem',
-    borderRadius: '6px',
-    border: '1px solid #334155',
-    backgroundColor: '#1e293b',
-    color: 'white',
+    padding: '0.625rem',
+    borderRadius: '8px',
+    border: '2px solid #e5e7eb',
+    backgroundColor: 'white',
+    color: '#1a1a1a',
     fontSize: '0.9rem',
+    outline: 'none',
   },
   chatButton: {
-    padding: '0.5rem 1rem',
-    backgroundColor: '#3b82f6',
-    color: 'white',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontWeight: '600',
-  },
-  button: {
-    padding: '0.875rem 2rem',
-    fontSize: '1.05rem',
-    backgroundColor: '#3b82f6',
+    padding: '0.625rem 1.25rem',
+    backgroundColor: '#2563eb',
     color: 'white',
     border: 'none',
     borderRadius: '8px',
     cursor: 'pointer',
     fontWeight: '600',
+    fontSize: '0.9rem',
   },
-  secondaryButton: {
-    padding: '0.625rem 1.25rem',
-    backgroundColor: '#475569',
+  button: {
+    padding: '1rem 2rem',
+    fontSize: '1.05rem',
+    backgroundColor: '#2563eb',
     color: 'white',
     border: 'none',
-    borderRadius: '6px',
+    borderRadius: '12px',
     cursor: 'pointer',
-    fontWeight: '500',
+    fontWeight: '600',
+    boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
+  },
+  secondaryButton: {
+    padding: '0.75rem 1.5rem',
+    backgroundColor: 'white',
+    color: '#4b5563',
+    border: '2px solid #e5e7eb',
+    borderRadius: '10px',
+    cursor: 'pointer',
+    fontWeight: '600',
+    fontSize: '0.95rem',
   },
   footer: {
     textAlign: 'center',
-    marginTop: '1.5rem',
+    marginTop: '2rem',
   },
 };
